@@ -51,9 +51,6 @@ double*** run_paths(double** q0s, double** q1s, int number_points) {
     // Set the number of threads
     omp_set_num_threads(num_cores);
 
-    clock_t start, end;
-    start = clock();
-
     // Enable parallel execution
     #pragma omp parallel
     {
@@ -89,10 +86,6 @@ double*** run_paths(double** q0s, double** q1s, int number_points) {
             }
         }
     }
-    end = clock();
-
-    double cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC / 12;
-    printf("Total time elapsed: %f seconds\n", cpu_time_used);
 
     // Placeholder
     return keep_paths;
