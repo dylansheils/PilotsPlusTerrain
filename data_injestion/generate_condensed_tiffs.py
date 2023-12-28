@@ -82,3 +82,5 @@ def run_iteration(region):
 
     image_data, ds = read_geotiff(filename)
     try_different_window_sizes(image_data, region, ds)
+
+run_iteration("n43w074")
