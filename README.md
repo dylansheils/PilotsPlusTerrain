@@ -14,6 +14,17 @@ Currently, here is the feature set of the newer edition:
 - Cubic-Spline Interpolated Sample-Index to Curvilinear Coordinate Transformation
 - Policy-based Chunking for Terrain Resolution
 - Boundary Intersection by Low Dimensional Nearest-Neighbor Search through Hierarchical Navigable Small World (HNSW)
-- Python-Interface Integration (Coming soon)
-- Parallelized Intersection Detection and Path Generation
+- Quick CPython Interface for Pilots Trajectory Project
+- Parallelized Point-Wise Intersection Detection and Path Generation
 - Monte-Carlo Tree Search for Partial Dubin Path Progressions
+
+## Pending Features
+
+- Parallelized Region Search
+- Adapative Terrain-Intersection Collision Detection (stage of flight)
+- Stage-of-Flight Aware-Adaptive Objective
+- ML-Assisted Predictive Incident-Day Monte Carlo Evaluation
+- Automatic Points-of-Interest Detection
+- Parallelized and Batched Monte-Carlo Child Search
+- C++ Implementation of Monte Carlo Search
+  
