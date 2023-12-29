@@ -121,7 +121,7 @@ class Region:
     def ensure_interpolation_initialized(self, resolution):
         """Ensure that interpolation functions are initialized for the given resolution."""
         if self.resolution_interpolated[resolution] is None:
-            points_filename = "{}_{}_samplepoints.bin".format(self.region, resolution)
+            points_filename = "/mnt/c/Users/Dylan/Desktop/NewWindAware/source/data_injestion/{}_{}_samplepoints.bin".format(self.region, resolution)
             sample_points = load_sample_points(points_filename)
             interp_lat, interp_lon = perform_bilinear_interpolation(sample_points)
             self.resolution_interpolated[resolution] = (interp_lat, interp_lon)
@@ -137,13 +137,13 @@ class Region:
             if(resolution >= self.best_resolution):
                 return False
 
-        points_filename = "{}_{}_samplepoints.bin".format(self.region, resolution)
+        points_filename = "/mnt/c/Users/Dylan/Desktop/NewWindAware/source/data_injestion/{}_{}_samplepoints.bin".format(self.region, resolution)
         sample_points = load_sample_points(points_filename)
         interp_lat, interp_lot = perform_bilinear_interpolation(sample_points)
         interp = (interp_lat, interp_lot)
         self.resolution_interpolated[resolution] = interp
         self.best_resolution = resolution
-        grid_filename = "{}_{}_elevation.bin".format(self.region, resolution)
+        grid_filename = "/mnt/c/Users/Dylan/Desktop/NewWindAware/source/data_injestion/{}_{}_elevation.bin".format(self.region, resolution)
         self.load_into_mesh(load_downsampled_data(grid_filename), resolution)
         return True
 
@@ -174,13 +174,13 @@ class Region:
         change = False
         for resolution in self.active_resolutions:
             grid_size = -1
-            if("{}_{}_elevation.bin".format(self.region, resolution) in self.hashed_sizes):
-                grid_size = self.hashed_sizes["{}_{}_elevation.bin".format(self.region, resolution)]
+            if("/mnt/c/Users/Dylan/Desktop/NewWindAware/source/data_injestion/{}_{}_elevation.bin".format(self.region, resolution) in self.hashed_sizes):
+                grid_size = self.hashed_sizes["/mnt/c/Users/Dylan/Desktop/NewWindAware/source/data_injestion/{}_{}_elevation.bin".format(self.region, resolution)]
             else:
-                grid_size = compute_grid_size("{}_{}_elevation.bin".format(self.region, resolution))
-                self.hashed_sizes["{}_{}_elevation.bin".format(self.region, resolution)] = grid_size
+                grid_size = compute_grid_size("/mnt/c/Users/Dylan/Desktop/NewWindAware/source/data_injestion/{}_{}_elevation.bin".format(self.region, resolution))
+                self.hashed_sizes["/mnt/c/Users/Dylan/Desktop/NewWindAware/source/data_injestion/{}_{}_elevation.bin".format(self.region, resolution)] = grid_size
 
-            points_filename = "{}_{}_samplepoints.bin".format(self.region, resolution)
+            points_filename = "/mnt/c/Users/Dylan/Desktop/NewWindAware/source/data_injestion/{}_{}_samplepoints.bin".format(self.region, resolution)
             if(grid_size < 100000 or np.linalg.norm(new_location[0:2], self.center) <= np.sqrt(2)):
                 if(self.load_full(resolution)):
                     change = True
@@ -223,18 +223,10 @@ class Region:
         return self.nmslib_index.knnQueryBatch(points, k=5)
 
     def detect_intersection(self, points):
-        #self.nmslib_index.set_ef(200)
-
-        """Intersection detection using nmslib with batch processing."""
-        # Perform batch search
         neighbours = self.knearestneighbor(points)
-        # Convert to numpy arrays for vectorized comparison
         all_distances = np.array([dist for _, dist in neighbours])
-        # Check if any distance in any batch is below the threshold (squared)
-        if np.any(all_distances < (50**2)):
-            return True
-
-        return False
+        intersection_points = np.array(points)[all_distances < (50**2)]
+        return intersection_points
 
 class Grid:
     regions = []
@@ -250,12 +242,6 @@ class Grid:
         for region in self.regions:
             region.load_region(point)
 
-    def compute_intersections(self, points):
-        for region in self.regions:
-            if(region.detect_intersection(points)):
-                return True
-        return False
-
     def subsample_path_random(self, path, max_length=10000):
         if len(path) <= max_length:
             return path
@@ -263,9 +249,12 @@ class Grid:
     
     def path_collision(self, path):
         self.load_data(path)
-        if(self.compute_intersections(path)):
-            return True
-        return False
+        intersection_points = []
+        for region in self.regions:
+            region_intersections = region.detect_intersection(path)
+            if region_intersections.size > 0:
+                intersection_points.extend(region_intersections)
+        return intersection_points
 
     def load_data(self, path):
         selection_points = np.linspace(0, len(path)-1, 1000)

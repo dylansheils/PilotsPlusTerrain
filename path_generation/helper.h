@@ -248,10 +248,6 @@ void save_wind_in_file(Curve augmented_curve_A, Curve augmented_SLS, Curve augme
 
 double** segment_to_4D_array(Seg2* seg2);
 
-double** linearInterpolation(double** pointsMatrix);
-
-void print_path(double** input_path);
-
 void free_4d_array(double** array, int size);
 //----------------------------------------------------------------------------------------------------------------------------------
 

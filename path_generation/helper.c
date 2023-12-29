@@ -412,6 +412,7 @@ Seg find_extended_runway(Seg path, double rnwy_x, double rnwy_y, double rnwy_hea
 	{
 		return path;
 	}	
+	return path;
 }
 
 //######################################## WIND MODELLING HELPER FUNCTIONS #####################################################
@@ -1084,93 +1085,6 @@ double calculateDistance(double x1, double y1, double z1, double x2, double y2, 
     return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-// Function to perform linear interpolation on a points matrix
-double** linearInterpolation(double** pointsMatrix) {
-    // Initialize interpolated points
-    double resolution = 1e-1;
-    double** interpolatedPoints = NULL;
-    
-    // Initialize variables
-    int numPoints = 0;
-    int maxInterpolatedPoints = 0;
-    
-    // Find the number of points in the original matrix
-    while (pointsMatrix[numPoints] != NULL) {
-        numPoints++;
-    }
-    
-    // Calculate the maximum possible number of interpolated points
-    for (int i = 1; i < numPoints - 1; i++) {
-        double x1 = pointsMatrix[i][0];
-        double y1 = pointsMatrix[i][1];
-        double z1 = pointsMatrix[i][3];
-        double x2 = pointsMatrix[i + 1][0];
-        double y2 = pointsMatrix[i + 1][1];
-        double z2 = pointsMatrix[i + 1][3];
-        double distance = calculateDistance(x1, y1, z1, x2, y2, z2);
-        maxInterpolatedPoints += (int)(distance / resolution) + 1;
-    }
-    
-    // Allocate memory for interpolated points
-    interpolatedPoints = (double**)malloc((maxInterpolatedPoints + numPoints) * sizeof(double*));
-    
-    if (interpolatedPoints == NULL) {
-        fprintf(stderr, "Memory allocation failed.\n");
-        exit(1);
-    }
-    
-    // Copy the first point from the original matrix
-    interpolatedPoints[0] = pointsMatrix[0];
-    
-    int idx = 1;  // Index for the interpolatedPoints array
-    
-    // Interpolate between points
-    for (int i = 1; i < numPoints - 1; i++) {
-        double x1 = pointsMatrix[i][0];
-        double y1 = pointsMatrix[i][1];
-        double z1 = pointsMatrix[i][3];
-        double x2 = pointsMatrix[i + 1][0];
-        double y2 = pointsMatrix[i + 1][1];
-        double z2 = pointsMatrix[i + 1][3];
-        double distance = calculateDistance(x1, y1, z1, x2, y2, z2);
-        int numSegments = (int)(distance / resolution) + 1;
-        
-        for (int j = 1; j <= numSegments; j++) {
-            double t = (double)j / numSegments;
-            double interpolatedX = x1 + t * (x2 - x1);
-            double interpolatedY = y1 + t * (y2 - y1);
-            double interpolatedZ = z1 + t * (z2 - z1);
-            double interpolatedHeading = pointsMatrix[i][2] + t * (pointsMatrix[i+1][2] - pointsMatrix[i][2]);
-            
-            // Allocate memory for the interpolated point
-            interpolatedPoints[idx] = (double*)malloc(4 * sizeof(double));
-            
-            if (interpolatedPoints[idx] == NULL) {
-                fprintf(stderr, "Memory allocation failed.\n");
-                exit(1);
-            }
-            
-            interpolatedPoints[idx][0] = interpolatedX;
-            interpolatedPoints[idx][1] = interpolatedY;
-            interpolatedPoints[idx][2] = interpolatedZ;
-            interpolatedPoints[idx][3] = interpolatedHeading;
-            
-            idx++;
-        }
-    }
-    
-    // Terminate the array with a NULL pointer
-    interpolatedPoints[idx] = NULL;
-    
-    return interpolatedPoints;
-}
-
-void print_path(double** input_path) {
-    for(int i = 0; input_path[i] != NULL; i++) {
-        printf("[%f, %f, %f, %f]\n", input_path[i][0], input_path[i][1], input_path[i][2], input_path[i][3]);
-    }
-}
-
 double** merge_curves(Curve *curves, int num_curves) {
     // Calculate the total length
     int total_len = 0;
@@ -1188,7 +1102,7 @@ double** merge_curves(Curve *curves, int num_curves) {
     // Copy elements from each curve
     int idx = 0;
     int index = 0;
-    for (int i = 0; i < num_curves - 1; ++i) {
+    for (int i = 0; i < num_curves; ++i) {
     	double** temp_array = create_4d_array(curves[i]);
         for (int j = 0; j < curves[i].len_curve; ++j) {
         	index = idx++;
@@ -1197,20 +1111,25 @@ double** merge_curves(Curve *curves, int num_curves) {
             merged_array[index][1] = temp_array[j][1];
             merged_array[index][2] = temp_array[j][2];
             merged_array[index][3] = temp_array[j][3];
+            free(temp_array[j]);
+            temp_array[j] = NULL;
         }
+        free(temp_array);
     }
     merged_array[index++] = NULL;
     return merged_array;
 }
 
 double** segment_to_4D_array(Seg2* seg2) {
-	Curve curves[5];
+	Curve* curves = (Curve*)malloc(5*sizeof(Curve));
     curves[0] = (seg2->aug_C1);
     curves[1] = (seg2->aug_SLS);
     curves[2] = (seg2->aug_C2);
     curves[3] = seg2->aug_SPIRAL;
     curves[4] = seg2->aug_EXTENDED;
-    return merge_curves(curves, 5);
+    double** pointer = merge_curves(curves, 5);
+    free(curves);
+    return pointer;
 }
 
 //function that saves augmented path in file
