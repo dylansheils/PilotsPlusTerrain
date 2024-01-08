@@ -27,4 +27,10 @@ Currently, here is the feature set of the newer edition:
 - Automatic Points-of-Interest Detection
 - Parallelized and Batched Monte-Carlo Child Search
 - C++ Implementation of Monte Carlo Search
+
+## Example Outputs
+![](https://github.com/dylansheils/PilotsPlusTerrain/blob/main/path_animation.gif)
+![](https://github.com/dylansheils/PilotsPlusTerrain/blob/main/path_animation_best.gif)
+![](https://github.com/dylansheils/PilotsPlusTerrain/blob/main/path_animation_quicker.gif)
+
   
