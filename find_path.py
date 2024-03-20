@@ -43,7 +43,7 @@ class PointSet:
 		self.end = q1
 
 	def give_options(self):
-		samples = 10
+		samples = 20
 		angles = [k*2*np.pi/samples for k in range(1,samples)]
 		points = []
 		for element in angles:
@@ -54,8 +54,8 @@ class PointSet:
 		global grid
 		intersections = np.array(grid.path_collision(path)).reshape(-1, 5)
 		point_final = np.array(intersections[0][0:3])
-		point_final[2] = point_final[2]*364173
 		self.intersection = point_final
+		print(self.intersection)
 		return -(intersections.shape[0])
 
 	def get_sample_points(self):
@@ -74,6 +74,7 @@ class PointSet:
 		global best_yet
 		total_path = memory_trick(self.q0s, self.q1s)
 		total_path = total_path[:len(self.q0s)]
+		print(total_path[0])
 		end_path = np.array(self.merge_paths(total_path))
 		value = self.judge_path(end_path, self.end)
 		print("Value: ", value)
